@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package com.github.mybatis.generator.gradle.plugin;
+package com.xh6.mybatis.generator.gradle.plugin;
 
 import java.util.List;
 import java.util.Set;

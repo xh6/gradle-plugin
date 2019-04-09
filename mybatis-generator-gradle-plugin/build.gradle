@@ -11,8 +11,8 @@ plugins {
     id 'idea'
 }
 
-group 'com.xh8'
-version '1.0.0'
+group 'com.xh6'
+version '1.0'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -57,8 +57,6 @@ repositories {
     maven { url "http://${nexus_url}/nexus/content/groups/public/" }
 }
 
-
-
 dependencies {
     compile gradleApi()
     compile localGroovy()
@@ -86,10 +84,10 @@ bintray {
     pkg {
         repo = 'maven'
         //不能和项目名称相同
-        name = 'mybatis-generator-plugin'
+        name = 'mybatis-generator-gradle-plugin'
         userOrg = user
         licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/xh6/mybatis-generator-gradle-plugin'
+        vcsUrl = 'https://github.com/xh6/gradle-plugin/tree/master/mybatis-generator-gradle-plugin'
     }
 }
 
