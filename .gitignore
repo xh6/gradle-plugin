@@ -1,0 +1,17 @@
+.gradle
+.idea
+*.iml
+classes
+target
+build/
+log.txt
+.project
+.settings
+.classpath
+out
+.DS_Store
+
+.gradletasknamecache
+gradlew
+gradlew.bat
+
