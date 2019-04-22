@@ -70,6 +70,9 @@ dependencies {
     compile "org.apache.commons:commons-lang3:3.7"
     compile "org.dom4j:dom4j:2.0.0"
     compile "com.alibaba:fastjson:1.2.44"
+    compile 'ch.ethz.ganymed:ganymed-ssh2:build210'
+    compile "org.apache.commons:commons-lang3:3.7"
+    compile "joda-time:joda-time:2.9.9"
 
     testCompile "commons-io:commons-io:2.6"
     testCompile "junit:junit:4.12"
@@ -80,16 +83,16 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-def siteUrl = 'https://github.com/xh6/mybatis-generator-gradle-plugin'                        // #CONFIG# // project homepage
-def gitUrl = 'https://github.com/xh6/mybatis-generator-gradle-plugin.git'                     // #CONFIG# // project git
+def siteUrl = 'https://github.com/xh6/ssh-deploy'
+def gitUrl = 'https://github.com/xh6/ssh-deploy.git'
 
 install {
     repositories.mavenInstaller {
         pom {
             project {
-                packaging 'mybatis-generator-gradle-plugin'
-                description 'Oh hi, this is a mybatis generator gradle plugin'
-                name 'mybatis-generator-gradle-plugin'  // 可默认，项目描述
+                packaging 'ssh-deploy'
+                description 'Oh hi, this is a ssh deploy plugin'
+                name 'ssh-deploy'  // 可默认，项目描述
                 url siteUrl
                 licenses {
                     license {
@@ -120,7 +123,7 @@ bintray {
     configurations = ['archives']
     pkg {
         repo = "maven"
-        name = "mybatis-generator-gradle-plugin"
+        name = "ssh-deploy"
         userOrg = user
         websiteUrl = siteUrl
         vcsUrl = gitUrl
