@@ -1,4 +1,4 @@
-package com.xh6.mybatis.generator.gradle.plugin;
+package com.xh6.plugin.mybatis.generator;
 
 import java.util.Date;
 import java.util.Properties;

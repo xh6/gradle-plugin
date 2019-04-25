@@ -14,7 +14,7 @@ apply plugin: 'maven'
 apply plugin: 'idea'
 
 group 'com.xh6'
-version '1.0'
+version '1.1'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -80,16 +80,16 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-def siteUrl = 'https://github.com/xh6/mybatis-generator-gradle-plugin'                        // #CONFIG# // project homepage
-def gitUrl = 'https://github.com/xh6/mybatis-generator-gradle-plugin.git'                     // #CONFIG# // project git
+def siteUrl = 'https://github.com/xh6/mybatis-generator'                        // #CONFIG# // project homepage
+def gitUrl = 'https://github.com/xh6/mybatis-generator.git'                     // #CONFIG# // project git
 
 install {
     repositories.mavenInstaller {
         pom {
             project {
-                packaging 'mybatis-generator-gradle-plugin'
+                packaging 'mybatis-generator'
                 description 'Oh hi, this is a mybatis generator gradle plugin'
-                name 'mybatis-generator-gradle-plugin'  // 可默认，项目描述
+                name 'mybatis-generator'  // 可默认，项目描述
                 url siteUrl
                 licenses {
                     license {
