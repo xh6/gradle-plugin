@@ -7,82 +7,82 @@ buildscript {
     }
 }
 
+apply from: rootProject.file('subprojects.gradle')
+
 subprojects {
 
-
-
     apply plugin: 'com.jfrog.bintray'
-    apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'idea'
 
     group 'com.xh6'
-    version '1.1'
-
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-
-    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
-
-    configurations.all {
-        resolutionStrategy.cacheChangingModulesFor 0, "seconds"
-    }
+    version '1.2'
 
 
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-
-    task createSourceSet {
-        doLast {
-            sourceSets*.java.srcDirs*.each {
-                it.mkdirs()
-            }
-            sourceSets*.resources.srcDirs*.each {
-                it.mkdirs()
-            }
+    bintray {
+        user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+        key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+        configurations = ['archives']
+        pkg {
+            repo = "maven"
+            name = project.name
+            userOrg = user
+            licenses = ["Apache-2.0"]
+            publish = true
         }
-    }
-
-
-    artifacts {
-
-        archives sourcesJar // build就会执行
-//        archives javadocJar
-    }
-
-    idea {
-        module {
-            downloadSources = true
-            downloadJavadoc = true
-            inheritOutputDirs = true
-        }
-    }
-
-
-    configurations {
-        provided
-        compile.extendsFrom provided
-        deployerJars
-    }
-
-    ext {
-//    nexus_url = "maven.me:8081"
-        nexus_url = "192.168.5.252:8081"
-        nexus_username = "admin"
-        nexus_password = "admin123"
-    }
-
-    repositories {
-        maven { url "http://${nexus_url}/nexus/content/groups/public/" }
-        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
-        maven { url "https://plugins.gradle.org/m2/" }
     }
 
 }
+
+/*
+插件使用方法
+buildscript {
+    repositories {
+        maven { url "http://${nexus_url}/nexus/content/groups/public/" }
+        maven { url "https://dl.bintray.com/xh8/maven/"}
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${spring_boot_version}"
+        classpath 'com.xh6:mybatis-generator:1.1'
+        classpath 'com.xh6:ssh-deploy:1.1'
+    }
+}
+apply plugin: 'mybatis.generator'
+apply plugin: "ssh.deploy"
+
+deploy {
+    host "192.168.60.1"
+    user "root"
+    password "123456"
+    remoteDir "/home"
+}
+
+
+src/test/resources/generatorConfig.xml:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "mybatis-generator-config_1_0_new.dtd">
+
+<generatorConfiguration>
+    <context id="zhouxinghai">
+        <property name="server" value="gradle.site:3306"/>
+        <property name="username" value="root"/>
+        <property name="passowrd" value="123456"/>
+        <property name="database" value="spider2"/>
+        <property name="dao.module" value="spring-boot-demo-mybatis"/>
+        <property name="dao.package" value="liangzhu.info.spider.mysql.dao.mapper"/>
+        <property name="sqlmap.package" value="sqlmap.spider.mapper"/>
+        <property name="domain.module" value="spring-boot-demo-mybatis"/>
+        <property name="domain.package" value="liangzhu.info.spider.mysql.domain"/>
+
+        <!--Url队列-->
+        <table tableName="link_queue">
+            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
+            <columnOverride column="priority" javaType="java.lang.Integer"/>
+            <columnOverride column="status" javaType="java.lang.Integer"/>
+            <columnOverride column="retryCount" javaType="java.lang.Integer"/>
+            <columnOverride column="maxRetry" javaType="java.lang.Integer"/>
+        </table>
+
+    </context>
+</generatorConfiguration>
+ */

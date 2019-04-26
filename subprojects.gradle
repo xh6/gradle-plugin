@@ -1,0 +1,89 @@
+subprojects {
+
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'maven'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, "seconds"
+    }
+
+    idea {
+        module {
+            downloadSources = true
+            downloadJavadoc = true
+            inheritOutputDirs = true
+        }
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        archiveClassifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        archiveClassifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    task createSourceSet {
+        doLast {
+            sourceSets*.java.srcDirs*.each {
+                it.mkdirs()
+            }
+            sourceSets*.resources.srcDirs*.each {
+                it.mkdirs()
+            }
+        }
+    }
+
+    task listJars() {
+        doLast {
+            configurations.compile.each { File file -> println file.name }
+        }
+    }
+
+    artifacts {
+        archives sourcesJar
+    }
+
+    configurations {
+        provided
+        compile.extendsFrom provided
+        deployerJars
+    }
+
+    ext {
+        nexus_url = '192.168.5.252:8081'
+//    nexus_url=gradle.site:8081
+        nexus_username = 'admin'
+        nexus_password = 'admin123'
+    }
+
+    repositories {
+        maven { url "http://${nexus_url}/nexus/content/groups/public/" }
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                configuration = configurations.deployerJars
+                snapshotRepository(url: "http://${nexus_url}/nexus/content/repositories/snapshots/") {
+                    authentication(userName: "${nexus_username}", password: "${nexus_password}")
+                }
+                repository(url: "http://${nexus_url}/nexus/content/repositories/releases/") {
+                    authentication(userName: "${nexus_username}", password: "${nexus_password}")
+                }
+            }
+        }
+    }
+
+
+}
