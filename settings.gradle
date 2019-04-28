@@ -1,4 +1,5 @@
 rootProject.name = 'gradle-plugin'
 include 'mybatis-generator'
 include 'ssh-deploy'
+include 'clean'
 

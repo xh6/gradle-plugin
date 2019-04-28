@@ -16,6 +16,14 @@ subprojects {
     group 'com.xh6'
     version '2.0'
 
+    dependencies {
+        compile gradleApi()
+        compile localGroovy()
+        compile "org.slf4j:slf4j-api:1.7.25"
+        compile "com.alibaba:fastjson:1.2.44"
+        compile "org.apache.commons:commons-lang3:3.7"
+    }
+
 
 }
 
