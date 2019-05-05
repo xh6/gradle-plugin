@@ -15,15 +15,15 @@ import org.gradle.api.Task;
 
 public class CleanPlugin implements Plugin<Project> {
 
-    private static FilenameFilter filter = (dir, fileName) -> StringUtils.equalsAny(fileName, "build", "out", ".idea", ".gradle") ||
-            StringUtils.endsWithAny(fileName, ".iml");
-
     @Override
     public void apply(Project project) {
 
-        project.task("cleanIdea").doLast(new Action<Task>() {
+        project.task("ideaClean").doLast(new Action<Task>() {
             @Override
             public void execute(Task task) {
+                FilenameFilter filter = (dir, fileName) -> StringUtils.equalsAny(fileName, "build", "out", ".idea", ".gradle") ||
+                        StringUtils.endsWithAny(fileName, ".iml");
+
                 List<File> list = new ArrayList<>();
                 list.addAll(Arrays.stream(project.getRootDir().listFiles(filter)).collect(Collectors.toList()));
                 Arrays.stream(project.getRootDir().listFiles(file -> file.isDirectory())).forEach(f -> {
