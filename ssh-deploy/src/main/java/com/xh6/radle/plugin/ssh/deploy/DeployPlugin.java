@@ -25,6 +25,7 @@ public class DeployPlugin implements Plugin<Project> {
                 publish.setLocalDir(project.getBuildDir().getAbsolutePath() + "/libs");
                 publish.setRemoteDir(deploy.getRemoteDir());
                 publish.setJvmArg(deploy.getJvmArg());
+                publish.setPort(deploy.getPort());
                 try {
                     PublishUtils.send(publish);
                 } catch (Exception e) {

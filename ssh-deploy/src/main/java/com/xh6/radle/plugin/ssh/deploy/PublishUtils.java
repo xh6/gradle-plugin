@@ -10,11 +10,11 @@ import org.apache.commons.lang3.StringUtils;
 public class PublishUtils {
 
     public static void send(PublishInfo info) throws Exception {
-        send(info.getHostname(), info.getUsername(), info.getPassword(), info.getLocalDir(), info.getAppName(), info.getRemoteDir(),
+        send(info.getHostname(), info.getPort(), info.getUsername(), info.getPassword(), info.getLocalDir(), info.getAppName(), info.getRemoteDir(),
                 info.getJvmArg());
     }
 
-    public static void send(String hostname, String username, String password, String localDir, String appName, String remoteDir,
+    public static void send(String hostname, Integer port, String username, String password, String localDir, String appName, String remoteDir,
             String jvmArg) throws Exception {
         if (StringUtils.isAnyBlank(hostname, username, localDir, appName, remoteDir)) {
             throw new RuntimeException("invalid params");
@@ -33,7 +33,8 @@ public class PublishUtils {
             long l2 = o2.lastModified();
             return (int) (l1 - l2);
         }).get();
-        SshClient sshClient = StringUtils.isBlank(password) ? new SshClient(hostname, username) : new SshClient(hostname, username, password);
+        SshClient sshClient = StringUtils.isBlank(password) ? new SshClient(hostname, port, username) :
+                new SshClient(hostname, port, username, password);
         sshClient.execute("mkdir -p " + remoteDir);
         System.out.println("发布文件:" + jar.getAbsolutePath());
         sshClient.scpPut(jar.getAbsolutePath(), remoteDir);
@@ -48,7 +49,7 @@ public class PublishUtils {
             }
         }
         sshClient.executeWithNoReturn(startCmd.toString());
-        String logCmd = String.format("ssh %s@%s \"tail -fn 500 %s\"", username, hostname, logFile);
+        String logCmd = String.format("ssh %s@%s -p %s \"tail -fn 500 %s\"", username, hostname, port, logFile);
         System.out.println(logCmd);
         sshClient.executeWithPrint(String.format("tail -fn 500 %s", logFile));
     }

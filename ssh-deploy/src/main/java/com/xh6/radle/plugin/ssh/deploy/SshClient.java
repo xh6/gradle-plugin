@@ -22,11 +22,14 @@ public class SshClient {
 
     private static       String     DEFAULTCHARTSET = "UTF-8";
 
-    public SshClient(String hostname, String username, String password) {
+    public SshClient(String hostname, Integer port, String username, String password) {
         try {
+            if (null == port) {
+                port = 22;
+            }
             this.hostname = hostname;
             this.username = username;
-            conn = new Connection(hostname);
+            conn = new Connection(hostname, port);
             conn.connect();
             boolean loginStatus = conn.authenticateWithPassword(username, password);
             if (loginStatus) {
@@ -38,11 +41,14 @@ public class SshClient {
         }
     }
 
-    public SshClient(String hostname, String username, File publicKey, String password) {
+    public SshClient(String hostname, Integer port, String username, File publicKey, String password) {
         try {
+            if (null == port) {
+                port = 22;
+            }
             this.hostname = hostname;
             this.username = username;
-            conn = new Connection(hostname);
+            conn = new Connection(hostname, port);
             conn.connect();
             boolean loginStatus = conn.authenticateWithPublicKey(username, publicKey, password);
             if (loginStatus) {
@@ -54,8 +60,8 @@ public class SshClient {
         }
     }
 
-    public SshClient(String hostname, String username) {
-        this(hostname, username, new File(System.getProperties().getProperty("user.home") + "/.ssh/id_rsa"), null);
+    public SshClient(String hostname, Integer port, String username) {
+        this(hostname, port, username, new File(System.getProperties().getProperty("user.home") + "/.ssh/id_rsa"), null);
     }
 
     /**
@@ -142,8 +148,8 @@ public class SshClient {
      * @Title: ConnectLinux
      * @Description: 通过用户名和密码关联linux服务器
      */
-    public static boolean connectLinux(String hostname, String username, String password, String command) {
-        SshClient executeCommand = new SshClient(hostname, username, password);
+    public static boolean connectLinux(String hostname, Integer port, String username, String password, String command) {
+        SshClient executeCommand = new SshClient(hostname, port, username, password);
         String result = executeCommand.execute(command);
         return StringUtils.isNotBlank(result);
     }

@@ -4,6 +4,8 @@ public class PublishInfo {
 
     private String hostname;
 
+    private Integer port = 22;
+
     private String username;
 
     private String password;
@@ -70,5 +72,13 @@ public class PublishInfo {
 
     public void setJvmArg(String jvmArg) {
         this.jvmArg = jvmArg;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 }

@@ -8,6 +8,8 @@ public class Deploy {
 
     private String host;
 
+    private Integer port    = 22;
+
     private String password;
 
     private String remoteDir;
@@ -64,8 +66,17 @@ public class Deploy {
         this.jvmArg = jvmArg;
     }
 
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
     @Override
     public String toString() {
-        return "Deploy{" + "user='" + user + '\'' + ", host='" + host + '\'' + ", password='" + password + '\''+ ", identity='" + identity.getAbsolutePath() + '\''+ '}';
+        return "Deploy{" + "user='" + user + '\'' + ", host='" + host + '\'' + ", port=" + port + ", password='" + password + '\'' + ", remoteDir='" +
+                remoteDir + '\'' + ", jvmArg='" + jvmArg + '\'' + ", identity=" + identity + '}';
     }
 }
