@@ -14,7 +14,7 @@ subprojects {
     apply plugin: 'com.jfrog.bintray'
 
     group 'com.xh6'
-    version '2.4'
+    version '2.5'
 
     dependencies {
         compile gradleApi()

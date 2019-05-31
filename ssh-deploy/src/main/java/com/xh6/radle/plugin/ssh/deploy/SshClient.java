@@ -34,8 +34,11 @@ public class SshClient {
             boolean loginStatus = conn.authenticateWithPassword(username, password);
             if (loginStatus) {
                 logger.info("ssh login by password success,hostname:{},username:{}", hostname, username);
+            } else {
+                logger.error("ssh login by password fail,invalid username or password,hostname:{},username:{}", hostname, username);
+                throw new RuntimeException("ssh login by password fail,invalid username or password");
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error("ssh login by password fail,hostname:{},username:{}", hostname, username, e);
             throw new RuntimeException("ssh login by password fail");
         }
@@ -53,8 +56,11 @@ public class SshClient {
             boolean loginStatus = conn.authenticateWithPublicKey(username, publicKey, password);
             if (loginStatus) {
                 logger.info("ssh login by publicKey success,hostname:{},username:{},publicKey:{}", hostname, username, publicKey);
+            } else {
+                logger.info("ssh login by publicKey fail,hostname:{},username:{},publicKey:{}", hostname, username, publicKey);
+                throw new RuntimeException("ssh login by password fail,invalid username or publicKey");
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error("ssh login by publicKey fail,hostname:{},username:{},publicKey:{}", hostname, username, publicKey, e);
             throw new RuntimeException("ssh login by password fail");
         }
@@ -93,8 +99,9 @@ public class SshClient {
         System.out.println(cmd);
         String result = "";
         try {
+            StringBuilder newCmd = new StringBuilder(" bash -lc '").append(cmd).append("'");
             Session session = conn.openSession();// 打开一个会话
-            session.execCommand(cmd);// 执行命令
+            session.execCommand(newCmd.toString());// 执行命令
             session.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -102,10 +109,14 @@ public class SshClient {
     }
 
     public void executeWithPrint(String cmd) {
+        System.out.println("************************************************************************************************************************");
+        System.out.println("SSH执行命令:");
+        System.out.println(cmd);
         String result = "";
         try {
+            StringBuilder newCmd = new StringBuilder(" bash -lc '").append(cmd).append("'");
             Session session = conn.openSession();// 打开一个会话
-            session.execCommand(cmd);// 执行命令
+            session.execCommand(newCmd.toString());// 执行命令
             InputStream stdout = new StreamGobbler(session.getStdout());
             StringBuffer buffer = new StringBuffer();
             BufferedReader br = new BufferedReader(new InputStreamReader(stdout, DEFAULTCHARTSET));
@@ -114,6 +125,7 @@ public class SshClient {
                 System.out.println(line);
             }
             session.close();
+            System.out.println("************************************************************************************************************************");
         } catch (IOException e) {
             e.printStackTrace();
         }
