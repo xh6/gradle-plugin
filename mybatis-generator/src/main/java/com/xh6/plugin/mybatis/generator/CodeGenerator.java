@@ -52,25 +52,28 @@ public class CodeGenerator {
     }
 
     public void createCode(Project project) {
-        try {
-            InputStream inputStream = null;
-            String path = project.getProjectDir() + "/src/main/resources/generatorConfig.xml";
-            if (new File(path).exists()) {
-                System.out.println("find mybatis generator config :" + path);
-                inputStream = new FileInputStream(path);
+        String searchPath = project.getProjectDir().getAbsolutePath();
+        String configFile = searchPath + "/src/main/resources/generatorConfig.xml";
+        if (new File(configFile).exists()) {
+            System.out.println("find mybatis generator config :" + configFile);
+        } else {
+            System.out.println("mybatis generator config not found :" + configFile);
+            configFile = searchPath + "/src/test/resources/generatorConfig.xml";
+            if (new File(configFile).exists()) {
+                System.out.println("find mybatis generator config :" + configFile);
             } else {
-                System.out.println("mybatis generator config not found :" + path);
-                path = project.getProjectDir() + "/src/test/resources/generatorConfig.xml";
-                if (new File(path).exists()) {
-                    inputStream = new FileInputStream(path);
-                    System.out.println("find mybatis generator config :" + path);
-                } else {
-                    System.out.println("mybatis generator config not found " + path);
-                    throw new RuntimeException("mybatis generator config not found");
-                }
+                System.out.println("mybatis generator config not found " + configFile);
+                throw new RuntimeException("mybatis generator config not found");
             }
+        }
+
+        createCode(project.getRootDir().getAbsolutePath(), configFile);
+    }
+
+    public void createCode(String defaultProjectRoot, String configFile) {
+        try (InputStream inputStream = new FileInputStream(configFile)) {
             Configuration config = parseConfiguration(inputStream);
-            initConfiguration(config, project);
+            initConfiguration(config, defaultProjectRoot);
             DefaultShellCallback callback = new DefaultShellCallback(true);
             MyBatisGenerator myBatisGenerator = new MyBatisGenerator(config, callback, warnings);
             myBatisGenerator.generate(null);
@@ -81,7 +84,7 @@ public class CodeGenerator {
 
     }
 
-    private void initConfiguration(Configuration configuration, Project project) {
+    private void initConfiguration(Configuration configuration, String defaultProjectRoot) throws IOException {
 
         for (Context context : configuration.getContexts()) {
 
@@ -92,19 +95,20 @@ public class CodeGenerator {
             context.getProperties().putIfAbsent("useActualColumnNames", "false");
             context.getProperties().putIfAbsent("suppressAllComments", "true");
 
-            String projectRoot = getAndRemove(context, "project.root");
-            if (null == projectRoot) {
-                projectRoot = project.getRootDir().getAbsolutePath();
+            String projectRoot = context.getProperty(GeneratorConstant.PROJECT_ROOT);
+            if (StringUtils.isBlank(projectRoot)) {
+                projectRoot = defaultProjectRoot;
             }
 
             if (null == context.getJdbcConnectionConfiguration()) {
-                String server = getAndRemove(context, "server");
-                String username = getAndRemove(context, "username");
-                String database = getAndRemove(context, "database");
-                String passowrd = getAndRemove(context, "passowrd");
+                String dbHost = getAndRemove(context, GeneratorConstant.DB_HOST);
+                String dbPort = getAndRemove(context, GeneratorConstant.DB_PORT);
+                String username = getAndRemove(context, GeneratorConstant.DB_USERNAME);
+                String database = getAndRemove(context, GeneratorConstant.DB_DATABASE);
+                String passowrd = getAndRemove(context, GeneratorConstant.DB_PASSOWRD);
                 String jdbcUrl = String
-                        .format("jdbc:mysql://%s/%s?useUnicode=true&amp;characterEncoding=utf8&amp;autoReconnect=true&amp;failOverReadOnly=false",
-                                server, database);
+                        .format("jdbc:mysql://%s:%s/%s?useUnicode=true&amp;characterEncoding=utf8&amp;autoReconnect=true&amp;failOverReadOnly=false",
+                                dbHost, dbPort, database);
                 JDBCConnectionConfiguration jdbcConnectionConfiguration = new JDBCConnectionConfiguration();
                 jdbcConnectionConfiguration.setDriverClass("com.mysql.jdbc.Driver");
                 jdbcConnectionConfiguration.setUserId(username);
@@ -113,34 +117,14 @@ public class CodeGenerator {
                 context.setJdbcConnectionConfiguration(jdbcConnectionConfiguration);
             }
 
-            String domainModule = getAndRemove(context, "domain.module");
-            String domainTargetProject = null;
-            if (StringUtils.isBlank(domainModule) || StringUtils.equals(domainModule, ".")) {
-                domainTargetProject = project.getProjectDir().getAbsolutePath();
-            } else {
-                if (StringUtils.startsWith(domainModule, "/")) {
-                    domainTargetProject = domainModule;
-                } else {
-                    domainTargetProject = project.getRootDir() + "/" + domainModule;
-                }
-            }
-
-            String daoModule = getAndRemove(context, "dao.module");
-            String daoTargetProject = null;
-            if (StringUtils.isBlank(daoModule) || StringUtils.equals(daoModule, ".")) {
-                daoTargetProject = project.getProjectDir().getAbsolutePath();
-            } else {
-                if (StringUtils.startsWith(daoModule, "/")) {
-                    daoTargetProject = daoModule;
-                } else {
-                    daoTargetProject = project.getRootDir() + "/" + daoModule;
-                }
-            }
-
             if (null == context.getSqlMapGeneratorConfiguration()) {
-                String sqlmapPackage = getAndRemove(context, "sqlmap.package");
+                String sqlmapPath = getAndRemove(context, GeneratorConstant.SQLMAP_PATH);
+                if (!StringUtils.startsWith(sqlmapPath, "/")) {
+                    sqlmapPath = projectRoot + "/" + sqlmapPath;
+                }
+                String sqlmapPackage = context.getProperty(GeneratorConstant.SQLMAP_PACKAGE);
                 SqlMapGeneratorConfiguration sqlMapGeneratorConfiguration = new SqlMapGeneratorConfiguration();
-                sqlMapGeneratorConfiguration.setTargetProject(daoTargetProject + "/src/main/resources");
+                sqlMapGeneratorConfiguration.setTargetProject(sqlmapPath);
                 sqlMapGeneratorConfiguration.setTargetPackage(sqlmapPackage);
                 sqlMapGeneratorConfiguration.addProperty("enableSubPackages", "true");
                 context.setSqlMapGeneratorConfiguration(sqlMapGeneratorConfiguration);
@@ -153,10 +137,14 @@ public class CodeGenerator {
             }
 
             if (null == context.getJavaModelGeneratorConfiguration()) {
-                String domainPackage = getAndRemove(context, "domain.package");
+                String modelPath = getAndRemove(context, GeneratorConstant.MODEL_PATH);
+                if (!StringUtils.startsWith(modelPath, "/")) {
+                    modelPath = projectRoot + "/" + modelPath;
+                }
+                String modelPackage = getAndRemove(context, GeneratorConstant.MODEL_PACKAGE);
                 JavaModelGeneratorConfiguration javaModelGeneratorConfiguration = new JavaModelGeneratorConfiguration();
-                javaModelGeneratorConfiguration.setTargetProject(domainTargetProject + "/src/main/java");
-                javaModelGeneratorConfiguration.setTargetPackage(domainPackage);
+                javaModelGeneratorConfiguration.setTargetProject(modelPath);
+                javaModelGeneratorConfiguration.setTargetPackage(modelPackage);
                 javaModelGeneratorConfiguration.addProperty("enableSubPackages", "true");
                 javaModelGeneratorConfiguration.addProperty("immutable", "false");
                 javaModelGeneratorConfiguration.addProperty("trimStrings", "true");
@@ -165,10 +153,14 @@ public class CodeGenerator {
             }
 
             if (null == context.getJavaClientGeneratorConfiguration()) {
-                String daoPackage = getAndRemove(context, "dao.package");
+                String mapperPath = getAndRemove(context, GeneratorConstant.MAPPER_PATH);
+                if (!StringUtils.startsWith(mapperPath, "/")) {
+                    mapperPath = projectRoot + "/" + mapperPath;
+                }
+                String mapperPackage = getAndRemove(context, GeneratorConstant.MAPPER_PACKAGE);
                 JavaClientGeneratorConfiguration javaClientGeneratorConfiguration = new JavaClientGeneratorConfiguration();
-                javaClientGeneratorConfiguration.setTargetProject(daoTargetProject + "/src/main/java");
-                javaClientGeneratorConfiguration.setTargetPackage(daoPackage);
+                javaClientGeneratorConfiguration.setTargetProject(mapperPath);
+                javaClientGeneratorConfiguration.setTargetPackage(mapperPackage);
                 //javaClientGeneratorConfiguration.setImplementationPackage("");
                 javaClientGeneratorConfiguration.setConfigurationType("XMLMAPPER");
                 javaClientGeneratorConfiguration.addProperty("enableSubPackages", "true");
@@ -257,6 +249,7 @@ public class CodeGenerator {
             }
 
             if (parseErrors.size() > 0) {
+                parseErrors.forEach(System.out::println);
                 throw new XMLParserException(parseErrors);
             }
 

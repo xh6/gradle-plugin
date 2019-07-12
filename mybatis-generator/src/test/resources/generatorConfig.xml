@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "/project/mybatis-generator-gradle-plugin/src/main/resources/mybatis-generator-config_1_0_new.dtd">
+
+<generatorConfiguration>
+    <context id="geek">
+        <property name="db.host" value="x66.fun"/>
+        <property name="db.port" value="3306"/>
+        <property name="db.username" value="root"/>
+        <property name="db.passowrd" value="123456"/>
+        <property name="db.database" value="geek"/>
+        <!--        <property name="project.root" value="/project/spider"/>-->
+        <property name="mapper.path" value="/project/gradle-plugin/mybatis-generator/src/test/java"/>
+        <property name="sqlmap.path" value="/project/gradle-plugin/mybatis-generator/src/test/resources"/>
+        <property name="model.path" value="/project/gradle-plugin/mybatis-generator/src/test/java"/>
+        <property name="mapper.package" value="com.github.spider.geek.dao.mapper"/>
+        <property name="model.package" value="com.github.spider.geek.domain"/>
+        <property name="sqlmap.package" value="sqlmap.geek"/>
+
+        <table tableName="user">
+            <!--            <generatedKey column="id" sqlStatement="MySql" identity="false"/>-->
+        </table>
+    </context>
+</generatorConfiguration>
