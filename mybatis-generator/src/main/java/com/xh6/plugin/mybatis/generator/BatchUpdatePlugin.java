@@ -30,9 +30,9 @@ import org.mybatis.generator.codegen.mybatis3.MyBatis3FormattingUtilities;
 
 import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
-public class BatchInsertPlugin extends PluginAdapter {
+public class BatchUpdatePlugin extends PluginAdapter {
 
-    private static final String METHOD_NAME = "batchInsertSelective";
+    private static final String METHOD_NAME = "batchUpdateByPrimaryKeySelective";
 
     /**
      * 修改Mapper类
@@ -97,64 +97,45 @@ public class BatchInsertPlugin extends PluginAdapter {
         foreachElement.addAttribute(new Attribute("separator", ";"));
 
         StringBuilder sb = new StringBuilder();
-        sb.append("insert into ");
+        sb.append("update ");
         sb.append(introspectedTable.getFullyQualifiedTableNameAtRuntime());
         foreachElement.addElement(new TextElement(sb.toString()));
 
-        XmlElement insertTrimElement = new XmlElement("trim");
-        insertTrimElement.addAttribute(new Attribute("prefix", "("));
-        insertTrimElement.addAttribute(new Attribute("suffix", ")"));
-        insertTrimElement.addAttribute(new Attribute("suffixOverrides", ","));
-        foreachElement.addElement(insertTrimElement);
+        XmlElement dynamicElement = new XmlElement("set"); //$NON-NLS-1$
+        foreachElement.addElement(dynamicElement);
 
-        XmlElement valuesTrimElement = new XmlElement("trim");
-        valuesTrimElement.addAttribute(new Attribute("prefix", "values ("));
-        valuesTrimElement.addAttribute(new Attribute("suffix", ")"));
-        valuesTrimElement.addAttribute(new Attribute("suffixOverrides", ","));
-        foreachElement.addElement(valuesTrimElement);
-
-        for (IntrospectedColumn introspectedColumn : ListUtilities.removeIdentityAndGeneratedAlwaysColumns(introspectedTable.getAllColumns())) {
-
-            if (introspectedColumn.isSequenceColumn() || introspectedColumn.getFullyQualifiedJavaType().isPrimitive()) {
-                sb.setLength(0);
-                sb.append(MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn));
-                sb.append(',');
-                insertTrimElement.addElement(new TextElement(sb.toString()));
-
-                sb.setLength(0);
-                sb.append(MyBatis3FormattingUtilities.getParameterClause(introspectedColumn));
-                sb.append(',');
-                valuesTrimElement.addElement(new TextElement(sb.toString()));
-
-                continue;
-            }
-
+        for (IntrospectedColumn introspectedColumn : ListUtilities.removeGeneratedAlwaysColumns(introspectedTable.getNonPrimaryKeyColumns())) {
             sb.setLength(0);
             sb.append(introspectedColumn.getJavaProperty("record."));
             sb.append(" != null");
-            XmlElement insertNotNullElement = new XmlElement("if");
-            insertNotNullElement.addAttribute(new Attribute("test", sb.toString()));
+            XmlElement isNotNullElement = new XmlElement("if");
+            isNotNullElement.addAttribute(new Attribute("test", sb.toString()));
+            dynamicElement.addElement(isNotNullElement);
 
             sb.setLength(0);
             sb.append(MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn));
-            sb.append(',');
-            insertNotNullElement.addElement(new TextElement(sb.toString()));
-            insertTrimElement.addElement(insertNotNullElement);
-
-            sb.setLength(0);
-            sb.append(introspectedColumn.getJavaProperty("record."));
-            sb.append(" != null");
-            XmlElement valuesNotNullElement = new XmlElement("if");
-            valuesNotNullElement.addAttribute(new Attribute("test", sb.toString()));
-
-            sb.setLength(0);
+            sb.append(" = ");
             sb.append(MyBatis3FormattingUtilities.getParameterClause(introspectedColumn,"record."));
             sb.append(',');
-            valuesNotNullElement.addElement(new TextElement(sb.toString()));
-            valuesTrimElement.addElement(valuesNotNullElement);
+            isNotNullElement.addElement(new TextElement(sb.toString()));
         }
 
-        XmlElement answer = new XmlElement("insert");
+        boolean and = false;
+        for (IntrospectedColumn introspectedColumn : introspectedTable.getPrimaryKeyColumns()) {
+            sb.setLength(0);
+            if (and) {
+                sb.append("  and ");
+            } else {
+                sb.append("where ");
+                and = true;
+            }
+            sb.append(MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn));
+            sb.append(" = ");
+            sb.append(MyBatis3FormattingUtilities.getParameterClause(introspectedColumn,"record."));
+            foreachElement.addElement(new TextElement(sb.toString()));
+        }
+
+        XmlElement answer = new XmlElement("update");
         answer.addAttribute(new Attribute("id", METHOD_NAME));
         answer.addAttribute(new Attribute("parameterType", "java.util.List"));
         answer.addElement(foreachElement);
