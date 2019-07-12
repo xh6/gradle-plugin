@@ -190,6 +190,7 @@ public class MybatisCodeGenerator {
             context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(PostfixPlugin.class).build());
             context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(NumberLikePlugin.class).build());
             context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(BatchInsertPlugin.class).build());
+            context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(BatchUpdatePlugin.class).build());
             context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(MethodFilterPlugin.class)
                     .addProperty("exclude", "{\"link_queue\":[\"insert\",\"updateByExample\",\"updateByPrimaryKey\"]}").build());
 

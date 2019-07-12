@@ -197,37 +197,53 @@
     where id = #{id,jdbcType=INTEGER}
   </update>
   <insert id="batchInsertSelective" parameterType="java.util.List">
-    insert into user
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="list[0].id!=null">
-        id,
-      </if>
-      <if test="list[0].username!=null">
-        username,
-      </if>
-      <if test="list[0].password!=null">
-        password,
-      </if>
-      <if test="list[0].city!=null">
-        city,
-      </if>
-    </trim>
-     values 
-    <foreach collection="list" index="index" item="item" separator=",">
-      <trim prefix=" (" suffix=")" suffixOverrides=",">
-        <if test="item.id!=null">
-          #{item.id,jdbcType=INTEGER},
+    <foreach collection="list" item="record" separator=";">
+      insert into user
+      <trim prefix="(" suffix=")" suffixOverrides=",">
+        <if test="record.id != null">
+          id,
         </if>
-        <if test="item.username!=null">
-          #{item.username,jdbcType=VARCHAR},
+        <if test="record.username != null">
+          username,
         </if>
-        <if test="item.password!=null">
-          #{item.password,jdbcType=VARCHAR},
+        <if test="record.password != null">
+          password,
         </if>
-        <if test="item.city!=null">
-          #{item.city,jdbcType=VARCHAR},
+        <if test="record.city != null">
+          city,
+        </if>
+      </trim>
+      <trim prefix="values (" suffix=")" suffixOverrides=",">
+        <if test="record.id != null">
+          #{record.id,jdbcType=INTEGER},
+        </if>
+        <if test="record.username != null">
+          #{record.username,jdbcType=VARCHAR},
+        </if>
+        <if test="record.password != null">
+          #{record.password,jdbcType=VARCHAR},
+        </if>
+        <if test="record.city != null">
+          #{record.city,jdbcType=VARCHAR},
         </if>
       </trim>
     </foreach>
   </insert>
+  <update id="batchUpdateByPrimaryKeySelective" parameterType="java.util.List">
+    <foreach collection="list" item="record" separator=";">
+      update user
+      <set>
+        <if test="record.username != null">
+          username = #{record.username,jdbcType=VARCHAR},
+        </if>
+        <if test="record.password != null">
+          password = #{record.password,jdbcType=VARCHAR},
+        </if>
+        <if test="record.city != null">
+          city = #{record.city,jdbcType=VARCHAR},
+        </if>
+      </set>
+      where id = #{record.id,jdbcType=INTEGER}
+    </foreach>
+  </update>
 </mapper>
