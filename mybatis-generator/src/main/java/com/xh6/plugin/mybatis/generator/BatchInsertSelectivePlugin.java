@@ -30,7 +30,7 @@ import org.mybatis.generator.codegen.mybatis3.MyBatis3FormattingUtilities;
 
 import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
-public class BatchInsertPlugin extends PluginAdapter {
+public class BatchInsertSelectivePlugin extends PluginAdapter {
 
     private static final String METHOD_NAME = "batchInsertSelective";
 

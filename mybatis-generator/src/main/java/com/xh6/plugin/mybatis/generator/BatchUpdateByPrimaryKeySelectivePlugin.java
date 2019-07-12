@@ -30,7 +30,7 @@ import org.mybatis.generator.codegen.mybatis3.MyBatis3FormattingUtilities;
 
 import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
-public class BatchUpdatePlugin extends PluginAdapter {
+public class BatchUpdateByPrimaryKeySelectivePlugin extends PluginAdapter {
 
     private static final String METHOD_NAME = "batchUpdateByPrimaryKeySelective";
 
