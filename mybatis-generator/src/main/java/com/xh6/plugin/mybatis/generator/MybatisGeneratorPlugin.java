@@ -14,7 +14,7 @@ public class MybatisGeneratorPlugin implements Plugin<Project> {
             @Override
             public void execute(Task task) {
                 try {
-                    CodeGenerator.getInstance().createCode(project);
+                    MybatisCodeGenerator.getInstance().createCode(project);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -35,20 +35,20 @@ import org.xml.sax.SAXParseException;
  * 代码生成入口
  * Created by zhouxinghai on 16/8/24.
  */
-public class CodeGenerator {
+public class MybatisCodeGenerator {
 
-    private static final Logger       logger      = LoggerFactory.getLogger(CodeGenerator.class);
+    private static final Logger       logger      = LoggerFactory.getLogger(MybatisCodeGenerator.class);
 
     private              List<String> warnings    = new ArrayList<>();
 
     private              List<String> parseErrors = new ArrayList<>();
 
-    private CodeGenerator() {
+    private MybatisCodeGenerator() {
 
     }
 
-    public static CodeGenerator getInstance() {
-        return new CodeGenerator();
+    public static MybatisCodeGenerator getInstance() {
+        return new MybatisCodeGenerator();
     }
 
     public void createCode(Project project) {
