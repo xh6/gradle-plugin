@@ -32,4 +32,6 @@ public interface UserMapper {
     int batchInsertSelective(List<UserDO> records);
 
     int batchUpdateByPrimaryKeySelective(List<UserDO> records);
+
+    int batchDeleteByPrimaryKey(List<UserDO> records);
 }

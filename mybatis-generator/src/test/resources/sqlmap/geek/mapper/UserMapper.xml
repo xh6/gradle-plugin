@@ -246,4 +246,13 @@
       where id = #{record.id,jdbcType=INTEGER}
     </foreach>
   </update>
+  <delete id="batchDeleteByPrimaryKey" parameterType="java.util.List">
+    delete from user
+    where id in 
+    <foreach close=")" collection="list" item="id" open="(" separator=",">
+      <if test="id  != null">
+        #{id,jdbcType=INTEGER}
+      </if>
+    </foreach>
+  </delete>
 </mapper>
