@@ -130,7 +130,7 @@ public class BatchInsertPlugin extends PluginAdapter {
             }
 
             sb.setLength(0);
-            sb.append("record.").append(introspectedColumn.getJavaProperty());
+            sb.append(introspectedColumn.getJavaProperty("record."));
             sb.append(" != null");
             XmlElement insertNotNullElement = new XmlElement("if");
             insertNotNullElement.addAttribute(new Attribute("test", sb.toString()));
@@ -142,7 +142,7 @@ public class BatchInsertPlugin extends PluginAdapter {
             insertTrimElement.addElement(insertNotNullElement);
 
             sb.setLength(0);
-            sb.append("record.").append(introspectedColumn.getJavaProperty());
+            sb.append(introspectedColumn.getJavaProperty("record."));
             sb.append(" != null");
             XmlElement valuesNotNullElement = new XmlElement("if");
             valuesNotNullElement.addAttribute(new Attribute("test", sb.toString()));
