@@ -25,14 +25,14 @@ import org.mybatis.generator.api.dom.xml.Attribute;
 import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
 import org.mybatis.generator.api.dom.xml.XmlElement;
-import org.mybatis.generator.codegen.mybatis3.ListUtilities;
 import org.mybatis.generator.codegen.mybatis3.MyBatis3FormattingUtilities;
 
+import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
 import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
-public class BatchUpdateByPrimaryKeySelectivePlugin extends PluginAdapter {
+public class BatchSelectByPrimaryKeyPlugin extends PluginAdapter {
 
-    private static final String METHOD_NAME = "batchUpdateByPrimaryKeySelective";
+    private static final String METHOD_NAME = "batchSelectByPrimaryKey";
 
     /**
      * 修改Mapper类
@@ -73,14 +73,7 @@ public class BatchUpdateByPrimaryKeySelectivePlugin extends PluginAdapter {
         ibsmethod.setName(METHOD_NAME);
         // 4.设置参数列表
         FullyQualifiedJavaType paramType = FullyQualifiedJavaType.getNewListInstance();
-        FullyQualifiedJavaType paramListType;
-        if (introspectedTable.getRules().generateBaseRecordClass()) {
-            paramListType = new FullyQualifiedJavaType(introspectedTable.getBaseRecordType());
-        } else if (introspectedTable.getRules().generatePrimaryKeyClass()) {
-            paramListType = new FullyQualifiedJavaType(introspectedTable.getPrimaryKeyType());
-        } else {
-            throw new RuntimeException(getString("RuntimeError.12"));
-        }
+        FullyQualifiedJavaType paramListType = introspectedTable.getPrimaryKeyColumns().get(0).getFullyQualifiedJavaType();
         paramType.addTypeArgument(paramListType);
 
         ibsmethod.addParameter(new Parameter(paramType, "list"));
@@ -91,34 +84,33 @@ public class BatchUpdateByPrimaryKeySelectivePlugin extends PluginAdapter {
 
     public void addBatchInsertSelectiveXml(Document document, IntrospectedTable introspectedTable) {
 
-        XmlElement foreachElement = new XmlElement("foreach");
-        foreachElement.addAttribute(new Attribute("collection", "list"));
-        foreachElement.addAttribute(new Attribute("item", "record"));
-        foreachElement.addAttribute(new Attribute("separator", ";"));
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("update ");
-        sb.append(introspectedTable.getFullyQualifiedTableNameAtRuntime());
-        foreachElement.addElement(new TextElement(sb.toString()));
-
-        XmlElement dynamicElement = new XmlElement("set"); //$NON-NLS-1$
-        foreachElement.addElement(dynamicElement);
-
-        for (IntrospectedColumn introspectedColumn : ListUtilities.removeGeneratedAlwaysColumns(introspectedTable.getNonPrimaryKeyColumns())) {
-            sb.setLength(0);
-            sb.append(introspectedColumn.getJavaProperty("record."));
-            sb.append(" != null");
-            XmlElement isNotNullElement = new XmlElement("if");
-            isNotNullElement.addAttribute(new Attribute("test", sb.toString()));
-            dynamicElement.addElement(isNotNullElement);
-
-            sb.setLength(0);
-            sb.append(MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn));
-            sb.append(" = ");
-            sb.append(MyBatis3FormattingUtilities.getParameterClause(introspectedColumn,"record."));
-            sb.append(',');
-            isNotNullElement.addElement(new TextElement(sb.toString()));
+        XmlElement answer = new XmlElement("select");
+        answer.addAttribute(new Attribute("id", METHOD_NAME));
+        answer.addAttribute(new Attribute("parameterType", "java.util.List"));
+        if (introspectedTable.getRules().generateResultMapWithBLOBs()) {
+            answer.addAttribute(new Attribute("resultMap", //$NON-NLS-1$
+                    introspectedTable.getResultMapWithBLOBsId()));
+        } else {
+            answer.addAttribute(new Attribute("resultMap", //$NON-NLS-1$
+                    introspectedTable.getBaseResultMapId()));
         }
+        StringBuilder sb = new StringBuilder();
+        sb.append("select "); //$NON-NLS-1$
+
+        if (stringHasValue(introspectedTable.getSelectByPrimaryKeyQueryId())) {
+            sb.append('\'');
+            sb.append(introspectedTable.getSelectByPrimaryKeyQueryId());
+            sb.append("' as QUERYID,"); //$NON-NLS-1$
+        }
+        answer.addElement(new TextElement(sb.toString()));
+        answer.addElement(getBaseColumnListElement(introspectedTable));
+        if (introspectedTable.hasBLOBColumns()) {
+            answer.addElement(new TextElement(",")); //$NON-NLS-1$
+            answer.addElement(getBlobColumnListElement(introspectedTable));
+        }
+        sb.append("from "); //$NON-NLS-1$
+        sb.append(introspectedTable.getAliasedFullyQualifiedTableNameAtRuntime());
+        answer.addElement(new TextElement(sb.toString()));
 
         boolean and = false;
         for (IntrospectedColumn introspectedColumn : introspectedTable.getPrimaryKeyColumns()) {
@@ -130,18 +122,46 @@ public class BatchUpdateByPrimaryKeySelectivePlugin extends PluginAdapter {
                 and = true;
             }
             sb.append(MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn));
-            sb.append(" = ");
-            sb.append(MyBatis3FormattingUtilities.getParameterClause(introspectedColumn,"record."));
-            foreachElement.addElement(new TextElement(sb.toString()));
+            sb.append(" in ");
+            answer.addElement(new TextElement(sb.toString()));
         }
 
-        XmlElement answer = new XmlElement("update");
-        answer.addAttribute(new Attribute("id", METHOD_NAME));
-        answer.addAttribute(new Attribute("parameterType", "java.util.List"));
+        String keyName = MyBatis3FormattingUtilities.getEscapedColumnName(introspectedTable.getPrimaryKeyColumns().get(0));
+        XmlElement foreachElement = new XmlElement("foreach");
         answer.addElement(foreachElement);
+        foreachElement.addAttribute(new Attribute("collection", "list"));
+        foreachElement.addAttribute(new Attribute("item", keyName));
+        foreachElement.addAttribute(new Attribute("close", ")"));
+        foreachElement.addAttribute(new Attribute("open", "("));
+        foreachElement.addAttribute(new Attribute("separator", ","));
+
+        sb.setLength(0);
+        sb.append(keyName);
+        sb.append("  != null");
+        XmlElement insertNotNullElement = new XmlElement("if");
+        insertNotNullElement.addAttribute(new Attribute("test", sb.toString()));
+
+        //
+        sb.setLength(0);
+        sb.append(MyBatis3FormattingUtilities.getParameterClause(introspectedTable.getPrimaryKeyColumns().get(0)));
+        insertNotNullElement.addElement(new TextElement(sb.toString()));
+        foreachElement.addElement(insertNotNullElement);
+
         context.getCommentGenerator().addComment(answer);
         document.getRootElement().addElement(answer);
 
+    }
+
+    protected XmlElement getBaseColumnListElement(IntrospectedTable introspectedTable) {
+        XmlElement answer = new XmlElement("include");
+        answer.addAttribute(new Attribute("refid", introspectedTable.getBaseColumnListId()));
+        return answer;
+    }
+
+    protected XmlElement getBlobColumnListElement(IntrospectedTable introspectedTable) {
+        XmlElement answer = new XmlElement("include");
+        answer.addAttribute(new Attribute("refid", introspectedTable.getBlobColumnListId()));
+        return answer;
     }
 
 }

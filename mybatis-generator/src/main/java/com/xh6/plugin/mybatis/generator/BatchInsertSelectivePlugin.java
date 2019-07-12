@@ -93,7 +93,7 @@ public class BatchInsertSelectivePlugin extends PluginAdapter {
 
         XmlElement foreachElement = new XmlElement("foreach");
         foreachElement.addAttribute(new Attribute("collection", "list"));
-        foreachElement.addAttribute(new Attribute("item", "record"));
+        foreachElement.addAttribute(new Attribute("item", "list"));
         foreachElement.addAttribute(new Attribute("separator", ";"));
 
         StringBuilder sb = new StringBuilder();

@@ -72,17 +72,10 @@ public class BatchDeleteByPrimaryKeyPlugin extends PluginAdapter {
         ibsmethod.setName(METHOD_NAME);
         // 4.设置参数列表
         FullyQualifiedJavaType paramType = FullyQualifiedJavaType.getNewListInstance();
-        FullyQualifiedJavaType paramListType;
-        if (introspectedTable.getRules().generateBaseRecordClass()) {
-            paramListType = new FullyQualifiedJavaType(introspectedTable.getBaseRecordType());
-        } else if (introspectedTable.getRules().generatePrimaryKeyClass()) {
-            paramListType = new FullyQualifiedJavaType(introspectedTable.getPrimaryKeyType());
-        } else {
-            throw new RuntimeException(getString("RuntimeError.12"));
-        }
+        FullyQualifiedJavaType paramListType = introspectedTable.getPrimaryKeyColumns().get(0).getFullyQualifiedJavaType();
         paramType.addTypeArgument(paramListType);
 
-        ibsmethod.addParameter(new Parameter(paramType, "records"));
+        ibsmethod.addParameter(new Parameter(paramType, "list"));
 
         interfaze.addImportedTypes(importedTypes);
         interfaze.addMethod(ibsmethod);

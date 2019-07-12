@@ -255,4 +255,15 @@
       </if>
     </foreach>
   </delete>
+  <select id="batchSelectByPrimaryKey" parameterType="java.util.List" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    select from user
+    where id in 
+    <foreach close=")" collection="list" item="id" open="(" separator=",">
+      <if test="id  != null">
+        #{id,jdbcType=INTEGER}
+      </if>
+    </foreach>
+  </select>
 </mapper>
