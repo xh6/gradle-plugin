@@ -63,14 +63,14 @@ public class BatchInsertSelectivePlugin extends PluginAdapter {
         importedTypes.add(FullyQualifiedJavaType.getNewListInstance());
         importedTypes.add(new FullyQualifiedJavaType(introspectedTable.getBaseRecordType()));
 
-        Method ibsmethod = new Method();
+        Method method = new Method();
         // 1.设置方法可见性
-        ibsmethod.setVisibility(JavaVisibility.PUBLIC);
+        method.setVisibility(JavaVisibility.PUBLIC);
         // 2.设置返回值类型
         FullyQualifiedJavaType ibsreturnType = FullyQualifiedJavaType.getIntInstance();// int型
-        ibsmethod.setReturnType(ibsreturnType);
+        method.setReturnType(ibsreturnType);
         // 3.设置方法名
-        ibsmethod.setName(METHOD_NAME);
+        method.setName(METHOD_NAME);
         // 4.设置参数列表
         FullyQualifiedJavaType paramType = FullyQualifiedJavaType.getNewListInstance();
         FullyQualifiedJavaType paramListType;
@@ -83,17 +83,17 @@ public class BatchInsertSelectivePlugin extends PluginAdapter {
         }
         paramType.addTypeArgument(paramListType);
 
-        ibsmethod.addParameter(new Parameter(paramType, "records"));
+        method.addParameter(new Parameter(paramType, "records"));
 
         interfaze.addImportedTypes(importedTypes);
-        interfaze.addMethod(ibsmethod);
+        interfaze.addMethod(method);
     }
 
     public void addBatchInsertSelectiveXml(Document document, IntrospectedTable introspectedTable) {
 
         XmlElement foreachElement = new XmlElement("foreach");
         foreachElement.addAttribute(new Attribute("collection", "list"));
-        foreachElement.addAttribute(new Attribute("item", "list"));
+        foreachElement.addAttribute(new Attribute("item", "record"));
         foreachElement.addAttribute(new Attribute("separator", ";"));
 
         StringBuilder sb = new StringBuilder();
@@ -113,21 +113,21 @@ public class BatchInsertSelectivePlugin extends PluginAdapter {
         valuesTrimElement.addAttribute(new Attribute("suffixOverrides", ","));
         foreachElement.addElement(valuesTrimElement);
 
-        for (IntrospectedColumn introspectedColumn : ListUtilities.removeIdentityAndGeneratedAlwaysColumns(introspectedTable.getAllColumns())) {
-
-            if (introspectedColumn.isSequenceColumn() || introspectedColumn.getFullyQualifiedJavaType().isPrimitive()) {
-                sb.setLength(0);
-                sb.append(MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn));
-                sb.append(',');
-                insertTrimElement.addElement(new TextElement(sb.toString()));
-
-                sb.setLength(0);
-                sb.append(MyBatis3FormattingUtilities.getParameterClause(introspectedColumn));
-                sb.append(',');
-                valuesTrimElement.addElement(new TextElement(sb.toString()));
-
-                continue;
-            }
+        for (IntrospectedColumn introspectedColumn : introspectedTable.getAllColumns()) {
+            //
+            //if (introspectedColumn.isSequenceColumn() || introspectedColumn.getFullyQualifiedJavaType().isPrimitive()) {
+            //    sb.setLength(0);
+            //    sb.append(MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn));
+            //    sb.append(',');
+            //    insertTrimElement.addElement(new TextElement(sb.toString()));
+            //
+            //    sb.setLength(0);
+            //    sb.append(MyBatis3FormattingUtilities.getParameterClause(introspectedColumn));
+            //    sb.append(',');
+            //    valuesTrimElement.addElement(new TextElement(sb.toString()));
+            //
+            //    continue;
+            //}
 
             sb.setLength(0);
             sb.append(introspectedColumn.getJavaProperty("record."));

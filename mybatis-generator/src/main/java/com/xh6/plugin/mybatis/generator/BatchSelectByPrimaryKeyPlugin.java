@@ -63,23 +63,23 @@ public class BatchSelectByPrimaryKeyPlugin extends PluginAdapter {
         importedTypes.add(FullyQualifiedJavaType.getNewListInstance());
         importedTypes.add(new FullyQualifiedJavaType(introspectedTable.getBaseRecordType()));
 
-        Method ibsmethod = new Method();
+        Method method = new Method();
         // 1.设置方法可见性
-        ibsmethod.setVisibility(JavaVisibility.PUBLIC);
+        method.setVisibility(JavaVisibility.PUBLIC);
         // 2.设置返回值类型
         FullyQualifiedJavaType ibsreturnType = FullyQualifiedJavaType.getIntInstance();// int型
-        ibsmethod.setReturnType(ibsreturnType);
+        method.setReturnType(ibsreturnType);
         // 3.设置方法名
-        ibsmethod.setName(METHOD_NAME);
+        method.setName(METHOD_NAME);
         // 4.设置参数列表
         FullyQualifiedJavaType paramType = FullyQualifiedJavaType.getNewListInstance();
         FullyQualifiedJavaType paramListType = introspectedTable.getPrimaryKeyColumns().get(0).getFullyQualifiedJavaType();
         paramType.addTypeArgument(paramListType);
 
-        ibsmethod.addParameter(new Parameter(paramType, "list"));
+        method.addParameter(new Parameter(paramType, "list"));
 
         interfaze.addImportedTypes(importedTypes);
-        interfaze.addMethod(ibsmethod);
+        interfaze.addMethod(method);
     }
 
     public void addBatchInsertSelectiveXml(Document document, IntrospectedTable introspectedTable) {
