@@ -194,6 +194,7 @@ public class MybatisCodeGenerator {
             context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(BatchDeleteByPrimaryKeyPlugin.class).build());
             context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(BatchSelectByPrimaryKeyPlugin.class).build());
             context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(QueryAllPlugin.class).build());
+            context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(SelectFirstByExamplePlugin.class).build());
             context.addPluginConfiguration(PluginConfigurationBuilder.getInstance(MethodFilterPlugin.class)
                     .addProperty("exclude", "{\"link_queue\":[\"insert\",\"updateByExample\",\"updateByPrimaryKey\"]}").build());
 

@@ -25,11 +25,11 @@ import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
 import org.mybatis.generator.api.dom.xml.XmlElement;
 
-import static org.mybatis.generator.internal.util.messages.Messages.getString;
+import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
 
-public class QueryAllPlugin extends PluginAdapter {
+public class SelectFirstByExamplePlugin extends PluginAdapter {
 
-    private static final String METHOD_NAME = "queryAll";
+    private static final String METHOD_NAME = "selectFirstByExample";
 
     /**
      * 修改Mapper类
@@ -65,20 +65,15 @@ public class QueryAllPlugin extends PluginAdapter {
         method.setVisibility(JavaVisibility.PUBLIC);
         // 2.设置返回值类型
 
-        FullyQualifiedJavaType returnType = FullyQualifiedJavaType.getNewListInstance();
-        FullyQualifiedJavaType listType;
-        if (introspectedTable.getRules().generateBaseRecordClass()) {
-            listType = new FullyQualifiedJavaType(introspectedTable.getBaseRecordType());
-        } else if (introspectedTable.getRules().generatePrimaryKeyClass()) {
-            listType = new FullyQualifiedJavaType(introspectedTable.getPrimaryKeyType());
-        } else {
-            throw new RuntimeException(getString("RuntimeError.12")); //$NON-NLS-1$
-        }
-
-        importedTypes.add(listType);
-        returnType.addTypeArgument(listType);
-
+        FullyQualifiedJavaType returnType = introspectedTable.getRules().calculateAllFieldsClass();
         method.setReturnType(returnType);
+        importedTypes.add(returnType);
+
+        //设置参数
+        FullyQualifiedJavaType type = new FullyQualifiedJavaType(introspectedTable.getExampleType());
+        importedTypes.add(type);
+        method.addParameter(new Parameter(type, "example"));
+
         // 3.设置方法名
         method.setName(METHOD_NAME);
         interfaze.addImportedTypes(importedTypes);
@@ -87,17 +82,61 @@ public class QueryAllPlugin extends PluginAdapter {
 
     public void addBatchInsertSelectiveXml(Document document, IntrospectedTable introspectedTable) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("select * from  ");
-        sb.append(introspectedTable.getFullyQualifiedTableNameAtRuntime());
+        String fqjt = introspectedTable.getExampleType();
 
         XmlElement answer = new XmlElement("select");
         answer.addAttribute(new Attribute("id", METHOD_NAME));
-        answer.addAttribute(new Attribute("resultMap", introspectedTable.getBaseResultMapId())); //$NON-NLS-1$
+        answer.addAttribute(new Attribute("resultMap", introspectedTable.getBaseResultMapId()));
+        answer.addAttribute(new Attribute("parameterType", fqjt));
+
+        answer.addElement(new TextElement("select"));
+        XmlElement ifElement = new XmlElement("if");
+        ifElement.addAttribute(new Attribute("test", "distinct"));
+        ifElement.addElement(new TextElement("distinct"));
+        answer.addElement(ifElement);
+
+        StringBuilder sb = new StringBuilder();
+        if (stringHasValue(introspectedTable.getSelectByExampleQueryId())) {
+            sb.append('\'');
+            sb.append(introspectedTable.getSelectByExampleQueryId());
+            sb.append("' as QUERYID,");
+            answer.addElement(new TextElement(sb.toString()));
+        }
+
+        answer.addElement(getBaseColumnListElement(introspectedTable));
+
+        sb.setLength(0);
+        sb.append(" from ");
+        sb.append(introspectedTable.getAliasedFullyQualifiedTableNameAtRuntime());
         answer.addElement(new TextElement(sb.toString()));
+        answer.addElement(getExampleIncludeElement(introspectedTable));
+
+        ifElement = new XmlElement("if");
+        ifElement.addAttribute(new Attribute("test", "orderByClause != null"));
+        ifElement.addElement(new TextElement("order by ${orderByClause} "));
+        answer.addElement(ifElement);
+        answer.addElement(new TextElement(" limit 1"));
+
         context.getCommentGenerator().addComment(answer);
         document.getRootElement().addElement(answer);
 
+    }
+
+    protected XmlElement getBaseColumnListElement(IntrospectedTable introspectedTable) {
+        XmlElement answer = new XmlElement("include");
+        answer.addAttribute(new Attribute("refid", introspectedTable.getBaseColumnListId()));
+        return answer;
+    }
+
+    protected XmlElement getExampleIncludeElement(IntrospectedTable introspectedTable) {
+        XmlElement ifElement = new XmlElement("if");
+        ifElement.addAttribute(new Attribute("test", "_parameter != null"));
+
+        XmlElement includeElement = new XmlElement("include");
+        includeElement.addAttribute(new Attribute("refid", introspectedTable.getExampleWhereClauseId()));
+        ifElement.addElement(includeElement);
+
+        return ifElement;
     }
 
 }
