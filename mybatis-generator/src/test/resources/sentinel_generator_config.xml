@@ -3,24 +3,6 @@
         "/project/mybatis-generator-mybatis-demo/src/main/resources/mybatis-generator-config_1_0_new.dtd">
 
 <generatorConfiguration>
-    <context id="mybatis-demo">
-        <property name="db.host" value="192.168.5.24"/>
-        <property name="db.port" value="3306"/>
-        <property name="db.username" value="root"/>
-        <property name="db.passowrd" value="Tianxing@0701"/>
-        <property name="db.database" value="mybatis-demo"/>
-        <!--        <property name="project.root" value="/project/spider"/>-->
-        <property name="mapper.path" value="/project/mybatis-demo/mybatis-demo-dao/src/main/java"/>
-        <property name="sqlmap.path" value="/project/mybatis-demo/mybatis-demo-dao/src/main/resources"/>
-        <property name="model.path" value="/project/mybatis-demo/mybatis-demo-domain/src/main/java"/>
-        <property name="mapper.package" value="fun.x66.mybatis.demo.dao.mapper"/>
-        <property name="model.package" value="fun.x66.mybatis.demo.domain"/>
-        <property name="sqlmap.package" value="sqlmap.mybatis.demo.mapper"/>
-
-        <table tableName="student">
-            <generatedKey column="id" sqlStatement="MySql" identity="false"/>
-        </table>
-    </context>
     <context id="sentinel_metrics">
         <property name="db.host" value="192.168.5.24"/>
         <property name="db.port" value="3306"/>
